@@ -1,0 +1,16 @@
+docopt
+future
+imgaug
+matplotlib
+numpy
+opencv-python
+pandas
+pillow
+psutil
+scikit-image
+scikit-learn
+scipy
+tensorboard
+tensorboardx
+termcolor
+tqdm

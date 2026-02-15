@@ -16,6 +16,8 @@ import torch.utils.data as data
 import tqdm
 
 from run_utils.utils import convert_pytorch_checkpoint
+import os
+device = torch.device("cpu") if os.environ.get("FORCE_CPU") == "1" else torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
 
 ####
@@ -67,7 +69,7 @@ class InferManager(object):
 
         net.load_state_dict(saved_state_dict, strict=True)
         net = torch.nn.DataParallel(net)
-        net = net.to("cuda")
+        net = net.to(device)
 
         module_lib = import_module("models.hovernet.run_desc")
         run_step = getattr(module_lib, "infer_step")

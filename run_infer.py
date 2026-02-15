@@ -114,6 +114,8 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = gpu_list
 
     nr_gpus = torch.cuda.device_count()
+    if nr_gpus == 0:
+        nr_gpus = 1
     log_info('Detect #GPUS: %d' % nr_gpus)
 
     args = {k.replace('--', '') : v for k, v in args.items()}

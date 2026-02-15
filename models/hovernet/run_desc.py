@@ -31,12 +31,12 @@ def train_step(batch_data, run_info):
     true_np = batch_data["np_map"]
     true_hv = batch_data["hv_map"]
 
-    imgs = imgs.to("cuda").type(torch.float32)  # to NCHW
+    imgs = imgs.to(device).type(torch.float32)  # to NCHW
     imgs = imgs.permute(0, 3, 1, 2).contiguous()
 
     # HWC
-    true_np = true_np.to("cuda").type(torch.int64)
-    true_hv = true_hv.to("cuda").type(torch.float32)
+    true_np = true_np.to(device).type(torch.int64)
+    true_hv = true_hv.to(device).type(torch.float32)
 
     true_np_onehot = (F.one_hot(true_np, num_classes=2)).type(torch.float32)
     true_dict = {
@@ -46,7 +46,7 @@ def train_step(batch_data, run_info):
 
     if model.module.nr_types is not None:
         true_tp = batch_data["tp_map"]
-        true_tp = torch.squeeze(true_tp).to("cuda").type(torch.int64)
+        true_tp = torch.squeeze(true_tp).to(device).type(torch.int64)
         true_tp_onehot = F.one_hot(true_tp, num_classes=model.module.nr_types)
         true_tp_onehot = true_tp_onehot.type(torch.float32)
         true_dict["tp"] = true_tp_onehot
@@ -121,7 +121,7 @@ def valid_step(batch_data, run_info):
     true_np = batch_data["np_map"]
     true_hv = batch_data["hv_map"]
 
-    imgs_gpu = imgs.to("cuda").type(torch.float32)  # to NCHW
+    imgs_gpu = imgs.to(device).type(torch.float32)  # to NCHW
     imgs_gpu = imgs_gpu.permute(0, 3, 1, 2).contiguous()
 
     # HWC
@@ -173,7 +173,7 @@ def infer_step(batch_data, model):
     ####
     patch_imgs = batch_data
 
-    patch_imgs_gpu = patch_imgs.to("cuda").type(torch.float32)  # to NCHW
+    patch_imgs_gpu = patch_imgs.to(device).type(torch.float32)  # to NCHW
     patch_imgs_gpu = patch_imgs_gpu.permute(0, 3, 1, 2).contiguous()
 
     ####
@@ -185,6 +185,7 @@ def infer_step(batch_data, model):
         pred_dict = OrderedDict(
             [[k, v.permute(0, 2, 3, 1).contiguous()] for k, v in pred_dict.items()]
         )
+        
         pred_dict["np"] = F.softmax(pred_dict["np"], dim=-1)[..., 1:]
         if "tp" in pred_dict:
             type_map = F.softmax(pred_dict["tp"], dim=-1)
@@ -258,6 +259,8 @@ def viz_step_output(raw_data, nr_types=None):
 
 ####
 from itertools import chain
+import os
+device = torch.device("cpu") if os.environ.get("FORCE_CPU") == "1" else torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 
 
 def proc_valid_step_output(raw_data, nr_types=None):

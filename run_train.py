@@ -38,6 +38,8 @@ from dataloader.train_loader import FileLoader
 from misc.utils import rm_n_mkdir
 from run_utils.engine import RunEngine
 from run_utils.utils import (
+import os
+device = torch.device("cpu") if os.environ.get("FORCE_CPU") == "1" else torch.device("mps" if torch.backends.mps.is_available() else "cpu")
     check_log_dir,
     check_manual_seed,
     colored,
@@ -216,7 +218,7 @@ class TrainManager(Config):
 
             # * extremely slow to pass this on DGX with 1 GPU, why (?)
             net_desc = DataParallel(net_desc)
-            net_desc = net_desc.to("cuda")
+            net_desc = net_desc.to(device)
             # print(net_desc) # * dump network definition or not?
             optimizer, optimizer_args = net_info["optimizer"]
             optimizer = optimizer(net_desc.parameters(), **optimizer_args)
